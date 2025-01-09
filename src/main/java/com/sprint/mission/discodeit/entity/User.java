@@ -1,116 +1,43 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import lombok.Getter;
-import lombok.Setter;
+public class User extends BaseEntity {
+    private String username;  // 사용자 이름
+    private String email;     // 사용자 이메일
 
-import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-
-@Getter
-@Entity
-@Table(name = "users")  // 테이블명: users
-public class User extends BaseUpdatableEntity {
-
-    @Column(name = "username", nullable = false, length = 50, unique = true)
-    private String username;
-
-    @Column(name = "email", length = 100, unique = true)
-    private String email;
-
-    @Column(name = "password", nullable = false)
-    private String password;
-
-    // ✅ 1:1 관계 - 프로필 이미지 (BinaryContent)
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "profile_id")
-    @Setter
-    private BinaryContent profile;
-
-    // ✅ 1:N 관계 - 사용자가 작성한 메시지들
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Message> messages = new ArrayList<>();
-
-    // ✅ 1:N 관계 - 사용자가 참여한 읽기 상태(ReadStatus)
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReadStatus> readStatuses = new ArrayList<>();
-
-    // ✅ 1:1 관계 - 사용자 상태(UserStatus) (양방향)
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private UserStatus userStatus;
-
-    protected User() {
-        // JPA 기본 생성자
-    }
-
-    public User(String username, String email, String password) {
-        super();
+    public User(String username, String email) {
+        super();  // BaseEntity의 생성자 호출
         this.username = username;
         this.email = email;
-        this.password = password;
     }
 
-    /**
-     * 사용자 정보 업데이트
-     */
-    public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
-        boolean anyValueUpdated = false;
-
-        if (newUsername != null && !newUsername.equals(this.username)) {
-            this.username = newUsername;
-            anyValueUpdated = true;
-        }
-        if (newEmail != null && !newEmail.equals(this.email)) {
-            this.email = newEmail;
-            anyValueUpdated = true;
-        }
-        if (newPassword != null && !newPassword.equals(this.password)) {
-            this.password = newPassword;
-            anyValueUpdated = true;
-        }
-        if (newProfile != null && !newProfile.equals(this.profile)) {
-            this.profile = newProfile;
-            anyValueUpdated = true;
-        }
-        if (anyValueUpdated) {
-            touchUpdatedAt();
-        }
+    // Getter 메서드
+    public String getUsername() {
+        return username;
     }
 
-    /**
-     * 메시지 추가 및 삭제
-     */
-    public void addMessage(Message message) {
-        messages.add(message);
-        message.setAuthor(this);
+    public String getEmail() {
+        return email;
     }
 
-    public void removeMessage(Message message) {
-        messages.remove(message);
-        message.setAuthor(null);
+    // Setter (Update) 메서드
+    public void updateUsername(String username) {
+        this.username = username;
+        setUpdateAT(System.currentTimeMillis()); // 수정 시간 업데이트
     }
 
-    /**
-     * 읽기 상태(ReadStatus) 추가 및 삭제
-     */
-    public void addReadStatus(ReadStatus rs) {
-        readStatuses.add(rs);
-        rs.setUser(this);
+    public void updateEmail(String email) {
+        this.email = email;
+        setUpdateAT(System.currentTimeMillis()); // 수정 시간 업데이트
+    }
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + getId() +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", createdAt=" + getCreatedAt() +
+                ", updatedAt=" + getUpdateAT() +
+                '}';
     }
 
-    public void removeReadStatus(ReadStatus rs) {
-        readStatuses.remove(rs);
-        rs.setUser(null);
-    }
-
-    /**
-     * 사용자 상태(UserStatus) 설정
-     */
-    public void setUserStatus(UserStatus userStatus) {
-        this.userStatus = userStatus;
-        if (userStatus != null) {
-            userStatus.setUser(this);
-        }
-    }
 }
