@@ -1,67 +1,49 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.dto.MessageCreateDTO;
+import com.sprint.mission.discodeit.dto.MessageDTO;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
+@Service("jcfMessageService")
 public class JCFMessageService implements MessageService {
 
-    private static JCFMessageService instance; // 싱글톤 인스턴스
-    private final Map<UUID, Message> data = new HashMap<>();
-    private final UserService userService;
-    private final ChannelService channelService;
+    private final Map<UUID, MessageDTO> messages = new ConcurrentHashMap<>();
 
-    private JCFMessageService(UserService userService, ChannelService channelService) {
-        this.userService = userService;
-        this.channelService = channelService;
+    @Override
+    public void create(MessageDTO messageDTO) {
+        messages.putIfAbsent(messageDTO.getId(), messageDTO); // ✅ 동시성 안전성 강화
     }
 
-    public static JCFMessageService getInstance(UserService userService, ChannelService channelService) {
-        if (instance == null) {
-            synchronized (JCFMessageService.class) {
-                if (instance == null) {
-                    instance = new JCFMessageService(userService, channelService);
-                }
-            }
-        }
-        return instance;
+    // ✅ MessageCreateDTO를 직접 받을 수 있도록 개선
+    @Override
+    public void create(MessageCreateDTO messageCreateDTO) {
+        UUID messageId = UUID.randomUUID();
+        messages.computeIfAbsent(messageId, id -> new MessageDTO(
+                id,
+                messageCreateDTO.getContent(),
+                messageCreateDTO.getSenderId(),
+                messageCreateDTO.getChannelId(),
+                null
+        ));
     }
 
     @Override
-    public void create(Message message) {
-        if (userService.read(message.getSenderId()).isEmpty()) {
-            throw new IllegalArgumentException("User not found: " + message.getSenderId());
-        }
-        if (channelService.read(message.getChannelId()).isEmpty()) {
-            throw new IllegalArgumentException("Channel not found: " + message.getChannelId());
-        }
-        data.put(message.getId(), message);
+    public List<MessageDTO> readAll() {
+        return new ArrayList<>(messages.values());
     }
 
     @Override
-    public Optional<Message> read(UUID id) {
-        return Optional.ofNullable(data.get(id));
+    public Optional<MessageDTO> read(UUID messageId) {
+        return Optional.ofNullable(messages.get(messageId));
     }
 
+    // ✅ 메시지 삭제 메서드 (안전하게 삭제)
     @Override
-    public List<Message> readAll() {
-        return new ArrayList<>(data.values());
-    }
-
-    @Override
-    public void update(UUID id, Message message) {
-        if (data.containsKey(id)) {
-            data.put(id, message);
-        } else {
-            throw new IllegalArgumentException("Message not found for ID: " + id);
-        }
-    }
-
-    @Override
-    public void delete(UUID id) {
-        data.remove(id);
+    public void delete(UUID messageId) {
+        messages.remove(messageId);
     }
 }

@@ -1,9 +1,10 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.request.LoginRequest;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.AuthRequestDTO;
+import com.sprint.mission.discodeit.dto.AuthResponseDTO;
+import java.util.Optional;
 
 public interface AuthService {
-
-  User login(LoginRequest loginRequest);
+    Optional<AuthResponseDTO> login(AuthRequestDTO authRequestDTO);
+    void registerUser(String username, String email, String password); // ✅ 이메일 추가
 }
