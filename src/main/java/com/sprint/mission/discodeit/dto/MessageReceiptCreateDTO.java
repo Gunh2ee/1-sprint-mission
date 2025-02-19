@@ -11,8 +11,8 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChannelCreateDTO {
-    private String name;
-    private String description;
-    private UUID creatorId;
+public class MessageReceiptCreateDTO {
+    private UUID messageId;
+    private UUID receiverId;
+    private UUID channelId;
 }

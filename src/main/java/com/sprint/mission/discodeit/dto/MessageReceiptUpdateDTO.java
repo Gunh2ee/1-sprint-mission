@@ -5,14 +5,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.UUID;
+import java.time.Instant;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChannelCreateDTO {
-    private String name;
-    private String description;
-    private UUID creatorId;
+public class MessageReceiptUpdateDTO {
+    private Instant receivedAt; // ✅ `readAt` → `receivedAt` 네이밍 통일
 }
