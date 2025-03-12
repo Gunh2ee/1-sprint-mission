@@ -1,30 +1,47 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import lombok.Getter;
+import lombok.Setter;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import jakarta.persistence.*;
 
 @Getter
-public class BinaryContent implements Serializable {
+@Entity
+@Table(name = "binary_contents")
+public class BinaryContent extends BaseEntity {
 
-  private static final long serialVersionUID = 1L;
-  private UUID id;
-  private Instant createdAt;
-  //
+  @Column(name = "file_name", nullable = false)
   private String fileName;
-  private Long size;
-  private String contentType;
-  private byte[] bytes;
 
-  public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
+  @Column(name = "size")
+  private Long size;
+
+  @Column(name = "content_type")
+  private String contentType;
+
+  // byte[] 제거
+  // @Lob
+  // @Column(name = "bytes", columnDefinition = "BLOB")
+  // private byte[] bytes;
+
+  // 여러 BinaryContent가 하나의 Message에 속할 수 있음 (N:1)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "message_id")
+  @Setter
+  private Message message;
+
+  protected BinaryContent() {
+    // JPA 기본 생성자
+  }
+
+  /**
+   * 메타 정보만 저장하는 생성자
+   */
+  public BinaryContent(String fileName, Long size, String contentType) {
+    super();
     this.fileName = fileName;
     this.size = size;
     this.contentType = contentType;
-    this.bytes = bytes;
   }
 }

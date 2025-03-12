@@ -1,29 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import lombok.Getter;
+import lombok.Setter;
 
-import java.io.Serializable;
+import jakarta.persistence.*;
 import java.time.Instant;
-import java.util.UUID;
 
 @Getter
-public class ReadStatus implements Serializable {
+@Entity
+@Table(name = "read_status")
+public class ReadStatus extends BaseUpdatableEntity {
 
-  private static final long serialVersionUID = 1L;
-  private UUID id;
-  private Instant createdAt;
-  private Instant updatedAt;
-  //
-  private UUID userId;
-  private UUID channelId;
+  // 다대일: 여러 ReadStatus가 하나의 User를 가리킴
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false)
+  @Setter
+  private User user;
+
+  // 다대일: 여러 ReadStatus가 하나의 Channel을 가리킴
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id", nullable = false)
+  @Setter
+  private Channel channel;
+
+  @Column(name = "last_read_at")
   private Instant lastReadAt;
 
-  public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
-    this.id = UUID.randomUUID();
-    this.createdAt = Instant.now();
-    //
-    this.userId = userId;
-    this.channelId = channelId;
+  protected ReadStatus() {
+  }
+
+  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+    super();
+    this.user = user;
+    this.channel = channel;
     this.lastReadAt = lastReadAt;
   }
 
@@ -33,9 +43,8 @@ public class ReadStatus implements Serializable {
       this.lastReadAt = newLastReadAt;
       anyValueUpdated = true;
     }
-
     if (anyValueUpdated) {
-      this.updatedAt = Instant.now();
+      touchUpdatedAt();
     }
   }
 }
