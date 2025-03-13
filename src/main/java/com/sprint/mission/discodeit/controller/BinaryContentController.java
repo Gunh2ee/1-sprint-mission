@@ -22,16 +22,16 @@ public class BinaryContentController implements BinaryContentApi {
   public ResponseEntity<BinaryContent> find(@PathVariable("binaryContentId") UUID binaryContentId) {
     BinaryContent binaryContent = binaryContentService.find(binaryContentId);
     return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(binaryContent);
+            .status(HttpStatus.OK)
+            .body(binaryContent);
   }
 
   @GetMapping
   public ResponseEntity<List<BinaryContent>> findAllByIdIn(
-      @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
+          @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
     List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
     return ResponseEntity
-        .status(HttpStatus.OK)
-        .body(binaryContents);
+            .status(HttpStatus.OK)
+            .body(binaryContents);
   }
 }
