@@ -2,11 +2,7 @@ package com.sprint.mission.discodeit.dto.response;
 
 import java.util.List;
 
-/**
- * 일관된 페이지네이션 응답을 위한 DTO
- *
- * @param <T> 페이지 목록에 담길 데이터 타입
- */
+
 public class PageResponse<T> {
 
     private List<T> content;     // 실제 데이터 목록

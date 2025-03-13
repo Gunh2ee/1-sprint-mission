@@ -11,9 +11,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * 모든 엔티티가 공통으로 가지는 필드를 정의.
- */
+
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {

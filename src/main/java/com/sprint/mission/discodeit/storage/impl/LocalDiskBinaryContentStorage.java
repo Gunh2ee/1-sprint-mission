@@ -22,19 +22,13 @@ import java.util.UUID;
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
 public class LocalDiskBinaryContentStorage implements BinaryContentStorage {
 
-    /**
-     * 예: discodeit.storage.local.root-path=C:/myproject/files
-     * 기본값: C:/temp/
-     */
+
     @Value("${discodeit.storage.local.root-path:C:/temp/}")
     private String rootPath;
 
     private Path root; // 루트 디렉터리를 Path로 관리
 
-    /**
-     * Bean이 생성된 후 자동 호출,
-     * root 디렉터리가 없으면 생성한다.
-     */
+
     @PostConstruct
     public void init() {
         root = Paths.get(rootPath);
@@ -45,18 +39,13 @@ public class LocalDiskBinaryContentStorage implements BinaryContentStorage {
         }
     }
 
-    /**
-     * 테스트 시 임시 디렉터리를 사용하고 싶다면 setBasePath(...)를 통해
-     * rootPath를 덮어씌운 뒤, init()을 다시 호출해야 함.
-     */
+
     public void setBasePath(String basePath) {
         this.rootPath = basePath;
         // init(); // <- 테스트에서 동적으로 변경 시, 여기서 init() 호출 가능
     }
 
-    /**
-     * 파일 경로 규칙: {root}/{contentId}
-     */
+
     private Path resolvePath(UUID contentId) {
         return root.resolve(contentId.toString());
     }

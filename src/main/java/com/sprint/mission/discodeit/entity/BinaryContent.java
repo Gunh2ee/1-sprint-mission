@@ -21,9 +21,6 @@ public class BinaryContent extends BaseEntity {
   private String contentType;
 
   // byte[] 제거
-  // @Lob
-  // @Column(name = "bytes", columnDefinition = "BLOB")
-  // private byte[] bytes;
 
   // 여러 BinaryContent가 하나의 Message에 속할 수 있음 (N:1)
   @ManyToOne(fetch = FetchType.LAZY)
@@ -35,9 +32,7 @@ public class BinaryContent extends BaseEntity {
     // JPA 기본 생성자
   }
 
-  /**
-   * 메타 정보만 저장하는 생성자
-   */
+
   public BinaryContent(String fileName, Long size, String contentType) {
     super();
     this.fileName = fileName;

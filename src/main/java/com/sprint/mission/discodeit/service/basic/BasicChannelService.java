@@ -25,9 +25,6 @@ public class BasicChannelService implements ChannelService {
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
 
-  /**
-   * 공개 채널 생성
-   */
   @Override
   public Channel create(PublicChannelCreateRequest request) {
     Channel channel = new Channel(
@@ -39,12 +36,6 @@ public class BasicChannelService implements ChannelService {
     return channelRepository.save(channel);
   }
 
-  /**
-   * 비공개 채널 생성
-   * - Channel 생성
-   * - 각 참가자(User)에 대해 ReadStatus를 만들고, channel.addReadStatus(...)로 연결
-   * - cascade=ALL + orphanRemoval=true 덕분에 channel만 save(...) 해도 ReadStatus가 자동 영속화
-   */
   @Override
   public Channel create(PrivateChannelCreateRequest request) {
     // 1) 채널 생성
@@ -64,9 +55,6 @@ public class BasicChannelService implements ChannelService {
     return channelRepository.save(channel);
   }
 
-  /**
-   * 채널 단건 조회 (읽기 전용)
-   */
   @Override
   @Transactional(Transactional.TxType.SUPPORTS)
   public ChannelDto find(UUID channelId) {
@@ -75,9 +63,6 @@ public class BasicChannelService implements ChannelService {
     return toDto(channel);
   }
 
-  /**
-   * 특정 유저가 볼 수 있는 채널 목록
-   */
   @Override
   @Transactional(Transactional.TxType.SUPPORTS)
   public List<ChannelDto> findAllByUserId(UUID userId) {
@@ -98,10 +83,7 @@ public class BasicChannelService implements ChannelService {
             .collect(Collectors.toList());
   }
 
-  /**
-   * 공개 채널 수정
-   * - Dirty Checking으로 channel.update(...)만 호출해도 자동 반영
-   */
+
   @Override
   public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
     Channel channel = channelRepository.findById(channelId)
@@ -119,11 +101,6 @@ public class BasicChannelService implements ChannelService {
     return channel;
   }
 
-  /**
-   * 채널 삭제
-   * - cascade=ALL + orphanRemoval=true 이므로,
-   *   channel만 지워도 연관된 Message, ReadStatus가 모두 삭제됨
-   */
   @Override
   public void delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
@@ -133,9 +110,7 @@ public class BasicChannelService implements ChannelService {
     channelRepository.delete(channel);
   }
 
-  /**
-   * Entity -> DTO 변환
-   */
+
   private ChannelDto toDto(Channel channel) {
     // 마지막 메시지 시각
     // LAZY 로딩: channel.getMessages() 접근 시점에 쿼리 발생 가능

@@ -19,7 +19,7 @@ public class UserMapper {
             return null;
         }
         // profile: BinaryContent → id
-        // online 상태는 Service/Mapper 호출 시점에 결정
+        // online 상태는 Service/Mapper 호출 시점
         return new UserDto(
                 user.getId(),
                 user.getUsername(),

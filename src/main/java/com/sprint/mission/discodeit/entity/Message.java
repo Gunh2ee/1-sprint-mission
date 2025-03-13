@@ -29,7 +29,6 @@ public class Message extends BaseUpdatableEntity {
   private User author;
 
   // 일대다: 하나의 Message에 여러 BinaryContent(첨부파일)
-  // BinaryContent 쪽에서 "message" 필드로 FK를 갖고 있다고 가정
   @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<BinaryContent> attachments = new ArrayList<>();
 

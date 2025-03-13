@@ -10,7 +10,7 @@ import java.time.Instant;
 
 @Getter
 @Entity
-@Table(name = "user_statuses")  // 테이블명 user_statuses (User와 충돌 방지)
+@Table(name = "user_statuses")
 public class UserStatus extends BaseUpdatableEntity {
 
   // ✅ 1:1 관계 - User가 주인 (양방향)
@@ -32,9 +32,6 @@ public class UserStatus extends BaseUpdatableEntity {
     this.lastActiveAt = lastActiveAt;
   }
 
-  /**
-   * 마지막 활동 시간 업데이트
-   */
   public void update(Instant newLastActiveAt) {
     if (newLastActiveAt != null && !newLastActiveAt.equals(this.lastActiveAt)) {
       this.lastActiveAt = newLastActiveAt;
@@ -42,9 +39,6 @@ public class UserStatus extends BaseUpdatableEntity {
     }
   }
 
-  /**
-   * 사용자 온라인 상태 확인 (최근 5분 이내 활동)
-   */
   public boolean isOnline() {
     Instant fiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
     return lastActiveAt != null && lastActiveAt.isAfter(fiveMinutesAgo);
