@@ -1,15 +1,15 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 @Repository
-public class BinaryContentRepository {
-    private final Map<UUID, BinaryContent> binaryContentStorage = new HashMap<>();
+public interface BinaryContentRepository extends JpaRepository<BinaryContent, UUID> {
 
-    public void deleteByOwnerId(UUID ownerId) {
-        binaryContentStorage.values().removeIf(content -> content.getOwnerId().equals(ownerId));
-    }
+    // 쿼리 메소드 추가 예정
+    // 사실 JpaRepository 기본 메소드 findAllById(...)로 대체 가능
 }

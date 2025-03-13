@@ -2,11 +2,17 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, UUID> {  // ✅ JpaRepository를 상속하면 existsById() 사용 가능
+@Repository
+public interface UserRepository extends JpaRepository<User, UUID> {
+
     Optional<User> findByUsername(String username);
-    Optional<User> findByEmail(String email);
+
+    // 이메일, 유저명 중복 체크
+    boolean existsByEmail(String email);
+    boolean existsByUsername(String username);
 }

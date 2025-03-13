@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.AuthRequest;
-import com.sprint.mission.discodeit.dto.AuthResponse;
-
-import java.util.Optional;
+import com.sprint.mission.discodeit.dto.request.LoginRequest;
+import com.sprint.mission.discodeit.entity.User;
 
 public interface AuthService {
-    Optional<AuthResponse> login(AuthRequest authRequest);
+
+    User login(LoginRequest loginRequest);
 }

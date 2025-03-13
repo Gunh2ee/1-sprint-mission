@@ -1,69 +1,64 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.AllArgsConstructor;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import java.io.Serializable;
-import java.time.Instant;
+import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "messages")
-public class Message extends BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class Message extends BaseUpdatableEntity {
 
-    private String content;
-    // 변경: senderId -> authorId
-    private UUID authorId;
-    private UUID channelId;
-    private List<UUID> attachmentIds = new ArrayList<>();
+  @Column(name = "content", nullable = false)
+  private String content;
 
-    // 기본 생성자: 새로운 메시지 생성 시 사용
-    public Message(String content, UUID authorId, UUID channelId) {
-        setId(UUID.randomUUID());
-        this.content = content;
-        this.authorId = authorId;
-        this.channelId = channelId;
-        this.attachmentIds = new ArrayList<>();
-        setCreatedAt(Instant.now());
+  // 다대일: 여러 Message가 하나의 Channel에 속함
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id", nullable = false)
+  @Setter
+  private Channel channel;
+
+  // 다대일: 여러 Message가 하나의 User(작성자)에 속함
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "author_id", nullable = false)
+  @Setter
+  private User author;
+
+  // 일대다: 하나의 Message에 여러 BinaryContent(첨부파일)
+  @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<BinaryContent> attachments = new ArrayList<>();
+
+  protected Message() {
+  }
+
+  public Message(String content) {
+    super();
+    this.content = content;
+  }
+
+  public void update(String newContent) {
+    boolean anyValueUpdated = false;
+    if (newContent != null && !newContent.equals(this.content)) {
+      this.content = newContent;
+      anyValueUpdated = true;
     }
 
-    // 추가 생성자
-    public Message(UUID id, String content, UUID authorId, UUID channelId, Instant createdAt) {
-        setId(id);
-        this.content = content;
-        this.authorId = authorId;
-        this.channelId = channelId;
-        this.attachmentIds = new ArrayList<>();
-        setCreatedAt(createdAt);
+    if (anyValueUpdated) {
+      touchUpdatedAt();
     }
+  }
 
-    public void addAttachment(UUID attachmentId) {
-        this.attachmentIds.add(attachmentId);
-        setUpdatedAt(Instant.now());
-    }
+  public void addAttachment(BinaryContent bc) {
+    attachments.add(bc);
+    bc.setMessage(this);
+  }
 
-    @Override
-    public String toString() {
-        return "Message{" +
-                "id=" + getId() +
-                ", content='" + content + '\'' +
-                ", authorId=" + authorId +
-                ", channelId=" + channelId +
-                ", attachmentIds=" + attachmentIds +
-                ", createdAt=" + getCreatedAt() +
-                ", updatedAt=" + getUpdatedAt() +
-                '}';
-    }
+  public void removeAttachment(BinaryContent bc) {
+    attachments.remove(bc);
+    bc.setMessage(null);
+  }
 }

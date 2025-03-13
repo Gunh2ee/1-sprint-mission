@@ -1,17 +1,21 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatusReadResponse;
-import com.sprint.mission.discodeit.dto.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface ReadStatusService {
-    void create(ReadStatusCreateRequest readStatusCreateRequest);
-    void update(UUID id, ReadStatusUpdateRequest readStatusUpdateRequest);
-    void delete(UUID id);
 
-    // ✅ 특정 사용자의 메시지 수신 정보 조회
-    List<ReadStatusReadResponse> readByUserId(UUID userId);
+    ReadStatus create(ReadStatusCreateRequest request);
+
+    ReadStatus find(UUID readStatusId);
+
+    List<ReadStatus> findAllByUserId(UUID userId);
+
+    ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request);
+
+    void delete(UUID readStatusId);
 }

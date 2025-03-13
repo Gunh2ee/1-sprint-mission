@@ -1,67 +1,67 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Primary;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
-@Service("basicBinaryContentService")
-@Primary
+@Service
 @RequiredArgsConstructor
+@Transactional // 클래스 단위 트랜잭션
 public class BasicBinaryContentService implements BinaryContentService {
 
-    private final Map<UUID, BinaryContent> fileStorage = new HashMap<>();
+  private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage; // 주입
 
-    @Override
-    public Optional<BinaryContentResponse> read(UUID id) {
-        return Optional.ofNullable(fileStorage.get(id))
-                .map(file -> new BinaryContentResponse(file.getId(), file.getFileName(), file.getData(), file.getOwnerId()));
-    }
+  @Override
+  public BinaryContent create(BinaryContentCreateRequest request) {
+    String fileName = request.fileName();
+    byte[] bytes = request.bytes();
+    String contentType = request.contentType();
 
-    @Override
-    public List<BinaryContentResponse> readAll() {
-        return fileStorage.values().stream()
-                .map(file -> new BinaryContentResponse(file.getId(), file.getFileName(), file.getData(), file.getOwnerId()))
-                .collect(Collectors.toList());
-    }
+    // DB에 메타 정보만
+    BinaryContent entity = new BinaryContent(
+            fileName,
+            (long) bytes.length,
+            contentType
+    );
+    entity = binaryContentRepository.save(entity);
 
-    @Override
-    public Resource download(UUID id) {
-        BinaryContent file = fileStorage.get(id);
-        if (file == null) {
-            throw new RuntimeException("❌ 파일을 찾을 수 없습니다: " + id);
-        }
-        return new ByteArrayResource(file.getData());  // ✅ 바이너리 데이터를 그대로 반환
-    }
+    // 실제 byte[] → 스토리지
+    binaryContentStorage.put(entity.getId(), bytes);
 
-    @Override
-    public UUID upload(MultipartFile file, UUID ownerId) {
-        try {
-            UUID fileId = UUID.randomUUID();
-            BinaryContent binaryContent = new BinaryContent(fileId, file.getOriginalFilename(), file.getBytes(), ownerId);
-            fileStorage.put(fileId, binaryContent);
-            return fileId;
-        } catch (IOException e) {
-            throw new RuntimeException("❌ 파일 저장 실패: " + e.getMessage());
-        }
-    }
+    return entity;
+  }
 
-    // ✅ 파일 삭제 기능 추가 (오류 해결)
-    @Override
-    public void delete(UUID id) {
-        if (fileStorage.containsKey(id)) {
-            fileStorage.remove(id);
-        } else {
-            throw new RuntimeException("❌ 삭제할 파일을 찾을 수 없습니다: " + id);
-        }
+  @Override
+  @Transactional(Transactional.TxType.SUPPORTS)
+  public BinaryContent find(UUID binaryContentId) {
+    return binaryContentRepository.findById(binaryContentId)
+            .orElseThrow(() -> new NoSuchElementException(
+                    "BinaryContent with id " + binaryContentId + " not found"));
+  }
+
+  @Override
+  @Transactional(Transactional.TxType.SUPPORTS)
+  public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
+    return binaryContentRepository.findAllById(binaryContentIds).stream()
+            .toList();
+  }
+
+  @Override
+  public void delete(UUID binaryContentId) {
+    if (!binaryContentRepository.existsById(binaryContentId)) {
+      throw new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
     }
+    // 스토리지에서도 지우려면 여기에 로직 추가 (예: binaryContentStorage.delete(binaryContentId))
+    binaryContentRepository.deleteById(binaryContentId);
+  }
 }
